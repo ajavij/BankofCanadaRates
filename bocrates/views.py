@@ -7,6 +7,8 @@ from .serializers import RateSerializer
 from rest_framework.decorators import api_view
 import urllib.request
 import json
+import requests, zipfile
+from io import BytesIO
 
 
 def RatesList(request):
@@ -14,7 +16,8 @@ def RatesList(request):
     # Get all rates from csv & serialize them & return JSON object
     rates = Rate.objects.all()
     serializer = RateSerializer(rates, many=True)
-    return JsonResponse({'Rates':serializer.data})
+    print("helloo")
+    return JsonResponse({'atessss':serializer.data})
 
 # Check if today's csv file is downloaded.
 def CheckCsv():
@@ -25,7 +28,18 @@ def CheckCsv():
 
 zipfileUrl = "https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/10100139/en"
 def DownloadCsv():
-    urlResponse = urllib.request.urlopen(zipfileUrl)
-    jsonTxt = json.load(urlResponse)
-    print(jsonTxt)
+    result = requests.api.get(zipfileUrl)
+    jsonDict = json.loads(result.content)
+    downloadUrl = jsonDict['object']
+
+    # Split URL to get the file name
+    filename = downloadUrl.split('/')[-1]
+
+    # Downloading the file
+    req = requests.get(downloadUrl)
+    print('Downloading Completed')
+
+    # extracting the zip file contents
+    file = zipfile.ZipFile(BytesIO(req.content))
+    file.extractall()
 
