@@ -1,5 +1,7 @@
+from datetime import datetime
+from email.policy import default
 from genericpath import exists
-import imp
+import datetime
 from django.http import JsonResponse
 
 from .models import Rate
@@ -10,6 +12,47 @@ import json
 import requests, zipfile
 from io import BytesIO
 import sqlite3, pandas as pd
+
+
+allYearsRates = pd.DataFrame()
+def GetRate(ratename):
+    global allYearsRates
+    connection = sqlite3.connect('bocratesDB.sqlite')
+    cursor = connection.cursor()
+    query = "SELECT VALUE from (SELECT `Financial market statistics`,Value, max(REF_DATE) from  rate where Value is not null group by 1) WHERE `Financial market statistics` == '" + ratename + "'"
+    res = cursor.execute(query)
+    rate = res.fetchall()[0][0]
+    obj, = Rate.objects.get_or_create(InterestRate = rate, Date = datetime.date.today(), FinancialMarket = ratename)
+    serialize = RateSerializer(obj)
+    return JsonResponse({'Bank Of Canada Rates':serialize.data})
+
+
+def GetBankRate(request):
+    return GetRate('Bank rate')
+
+def GetTargetRate(request):
+    return GetRate('Target rate')
+
+def Get10yearBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, 10 year')
+
+def Get2yearBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, 2 year')
+
+def Get3yearBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, 3 year')
+
+def Get5yearBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, 5 year')
+
+def Get7yearBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, 7 year')
+
+def GetLongTermBondRate(request):
+    return GetRate('Government of Canada benchmark bond yields, long term')
+
+def GetMMFinancingRate(request):
+    return GetRate('Overnight money market financing')
 
 
 def RatesList(request):
@@ -46,9 +89,10 @@ def DownloadCsv():
     file.extractall()
 
 def ImportCsv():
+    global allYearsRates
     # read csv and import it into sqlite db (replace if existing)
     conn = sqlite3.connect('bocratesDB.sqlite')
     c = conn.cursor()
-    lines = pd.read_csv('bocrates.csv')
-    lines.to_sql('rate', conn, if_exists='replace', index = False)
+    allYearsRates = pd.read_csv('bocrates.csv')
+    allYearsRates.to_sql('rate', conn, if_exists='replace', index = False)   
 

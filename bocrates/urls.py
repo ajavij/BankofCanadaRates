@@ -20,4 +20,13 @@ from bocrates import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('bocrates/',views.RatesList),
+    path('bankrate/', views.GetBankRate),
+    path('targetrate/', views.GetTargetRate),
+    path('10yearbond/',views.Get10yearBondRate),
+    path('2yearbond/',views.Get2yearBondRate),
+    path('5yearbond/',views.Get5yearBondRate),
+    path('3yearbond/',views.Get3yearBondRate),
+    path('7yearbond/',views.Get7yearBondRate),
+    path('longtermbond/',views.GetLongTermBondRate),
+    path('mmfinancing/',views.GetMMFinancingRate)
 ]
