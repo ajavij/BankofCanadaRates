@@ -22,7 +22,7 @@ def GetRate(ratename):
     query = "SELECT VALUE from (SELECT `Financial market statistics`,Value, max(REF_DATE) from  rate where Value is not null group by 1) WHERE `Financial market statistics` == '" + ratename + "'"
     res = cursor.execute(query)
     rate = res.fetchall()[0][0]
-    obj, = Rate.objects.get_or_create(InterestRate = rate, Date = datetime.date.today(), FinancialMarket = ratename)
+    obj,_ = Rate.objects.get_or_create(InterestRate = rate, Date = datetime.date.today(), FinancialMarket = ratename)
     serialize = RateSerializer(obj)
     return JsonResponse({'Bank Of Canada Rates':serialize.data})
 
